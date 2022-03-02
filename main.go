@@ -1,29 +1,21 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/sujaykumarsuman/project-one/handler"
 )
 
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Hello World!")
-	})
+	logger := log.New(os.Stdout, "product-api", log.Default().Flags())
+	hh := handler.NewHello(logger)
+	gh := handler.NewGoodbye(logger)
 
-	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		d, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("[ERROR]: %s", err.Error()), http.StatusInternalServerError)
-			return
-		}
-		log.Printf("Data: %s", d)
-		fmt.Fprintf(w, "Hello %s!\n", d)
-	})
+	sm := http.NewServeMux()
+	sm.Handle("/", hh)
+	sm.Handle("/bye", gh)
 
-	http.HandleFunc("/goodbye", func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Goodbye!")
-	})
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8080", sm)
 }
